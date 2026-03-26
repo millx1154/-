@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการผู้ใช้งาน (Admin Panel)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f9ff; margin: 0; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        /* Custom scrollbar สำหรับตาราง */
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-slate-800 bg-slate-50 flex flex-col min-h-screen" onload="loadUsers()">
+
+    <nav class="bg-slate-900 shadow-md sticky top-0 z-40 border-b border-slate-700">
+    <div class="w-full px-4 md:px-8 h-16 flex items-center justify-between">
+        
+        <div class="flex items-center gap-6 h-full flex-1 overflow-x-auto hide-scrollbar">
+            <span class="text-white text-xl font-bold tracking-wider shrink-0 flex items-center gap-2 mr-2">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <span class="hidden md:inline">ระบบติดตามนักศึกษาภาวะวิกฤต</span>
+            </span>
+            
+            <div class="flex items-center gap-1">
+                <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    สแกน PDF
+                </a>
+                
+                <a href="view_data.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                    ฐานข้อมูลประวัติ
+                </a>
+                
+                <a href="tracking.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    บันทึกการติดตาม
+                </a>
+                
+                <a href="report.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    รายงานสถิติ
+                </a>
+                
+                <a id="adminMenuLink" href="admin.html" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30 transition shadow-inner text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    จัดการผู้ใช้ (Admin)
+                </a>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0 ml-4 pl-4 border-l border-slate-700">
+            <div class="hidden sm:flex flex-col items-end">
+                <span class="text-[10px] text-slate-400 font-medium tracking-wide">ผู้ใช้งานระบบ</span>
+                <span id="topbarUserName" class="text-sm font-bold text-white">กำลังโหลด...</span>
+            </div>
+            <div class="relative">
+                <img id="userProfilePic" src="" alt="Profile" class="w-9 h-9 rounded-full border-2 border-slate-600 shadow-sm object-cover bg-slate-800">
+                <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-500 border-2 border-slate-900 rounded-full"></div>
+            </div>
+            <button onclick="logout()" title="ออกจากระบบ" class="ml-1 text-slate-400 hover:text-red-400 bg-slate-800 hover:bg-red-500/10 p-2 rounded-lg transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </button>
+        </div>
+
+    </div>
+    </nav>
+
+    <div class="p-4 md:p-6 flex-1">
+        <div class="max-w-[1400px] mx-auto glass-card p-6 rounded-2xl shadow-xl border-t-4 border-blue-600 bg-white">
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-slate-100 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-blue-900 tracking-tight">ระบบจัดการผู้ใช้งาน</h1>
+                    <p class="text-sm text-slate-500 mt-1 font-medium">เพิ่ม, แก้ไข, หรือลบสิทธิ์ผู้ใช้งานในระบบ</p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition flex items-center text-sm h-[42px]">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        เพิ่มผู้ใช้ใหม่
+                    </button>
+                </div>
+            </div>
+
+            <div id="loading" class="mb-6 p-5 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
+                <p class="text-lg font-bold text-blue-800 animate-pulse">กำลังโหลดข้อมูลผู้ใช้งาน...</p>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar rounded-xl border border-slate-200 shadow-sm bg-white">
+                <table class="w-full border-collapse min-w-[800px]">
+                    <thead class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                        <tr>
+                            <th class="p-3 text-left text-sm font-semibold w-16">ID</th>
+                            <th class="p-3 text-left text-sm font-semibold">Username</th>
+                            <th class="p-3 text-left text-sm font-semibold">ชื่อ-นามสกุล</th>
+                            <th class="p-3 text-center text-sm font-semibold w-32">สิทธิ์ (Role)</th>
+                            <th class="p-3 text-center text-sm font-semibold w-48 border-l border-slate-200">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody" class="divide-y divide-slate-100 text-sm">
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="userModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] hidden backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all border-t-4 border-blue-600">
+            <h2 id="modalTitle" class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">เพิ่มผู้ใช้งาน</h2>
+            <input type="hidden" id="userId">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-1">ชื่อ-นามสกุลจริง</label>
+                    <input type="text" id="userFullname" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 focus:bg-white" placeholder="เช่น อ.สมชาย ใจดี">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-1">Username (สำหรับล็อกอิน)</label>
+                    <input type="text" id="userUsername" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 focus:bg-white" placeholder="เช่น somchai.j">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-1">รหัสผ่าน <span id="pwdHint" class="text-xs text-orange-500 font-normal"></span></label>
+                    <input type="password" id="userPassword" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 focus:bg-white" placeholder="ตั้งรหัสผ่าน">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-1">ระดับสิทธิ์</label>
+                    <select id="userRole" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 focus:bg-white">
+                        <option value="user">User (ผู้ใช้งานทั่วไป)</option>
+                        <option value="admin">Admin (ผู้ดูแลระบบ)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button onclick="closeModal()" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold transition">ยกเลิก</button>
+                <button onclick="saveUser()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. ระบบ Sidebar (มือถือ)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if(sidebar && overlay) {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+        }
+
+        // 2. ระบบ Login & Session (ตรวจสอบสิทธิ์ Admin)
+        var currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            alert("🔒 กรุณาเข้าสู่ระบบก่อนใช้งานครับ");
+            window.location.href = 'login.html';
+        } 
+        else if (currentUser.role !== 'admin') {
+            alert("❌ คุณไม่มีสิทธิ์เข้าถึงหน้าจัดการผู้ใช้งานครับ!");
+            window.location.href = 'index.html';
+        } 
+        else {
+            // ใส่ชื่อผู้ใช้ที่ Topbar
+            let topbarName = document.getElementById('topbarUserName');
+            if(topbarName) topbarName.innerText = currentUser.fullname;
+
+            // รูปโปรไฟล์สีฟ้า
+            let profilePic = document.getElementById('userProfilePic');
+            if(profilePic) {
+                profilePic.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullname)}&background=0ea5e9&color=fff&size=128&bold=true`;
+            }
+        }
+
+        function logout() {
+            if(confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // 3. ระบบจัดการข้อมูลผู้ใช้งาน (Admin System)
+        let usersData = [];
+        let isEditMode = false;
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('api.php?action=get_users');
+                const result = await res.json();
+                if(result.status === 'success') {
+                    usersData = result.data;
+                    renderTable();
+                }
+            } catch (err) { 
+                console.error("Error:", err);
+                alert('เชื่อมต่อฐานข้อมูลล้มเหลว ตรวจสอบไฟล์ api.php ครับ'); 
+            } 
+            finally { 
+                const loader = document.getElementById('loading');
+                if(loader) loader.classList.add('hidden'); 
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            
+            if(usersData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">ไม่พบข้อมูลผู้ใช้งาน</td></tr>`;
+                return;
+            }
+
+            usersData.forEach(u => {
+                // เปลี่ยนสี Badge Admin เป็นโทนสีฟ้า
+                let roleBadge = u.role === 'admin' 
+                    ? '<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded shadow-sm font-bold text-[11px] border border-blue-200">Admin</span>' 
+                    : '<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded shadow-sm font-bold text-[11px] border border-slate-200">User</span>';
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 bg-white">
+                        <td class="p-3 text-center text-slate-500">${u.id}</td>
+                        <td class="p-3 font-mono font-bold text-blue-700">${u.username}</td>
+                        <td class="p-3 font-medium text-slate-800">${u.fullname}</td>
+                        <td class="p-3 text-center">${roleBadge}</td>
+                        <td class="p-3 text-center flex justify-center gap-2 border-l border-slate-100">
+                            <button onclick="openModal('edit', ${u.id})" class="text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded text-sm font-bold transition border border-transparent hover:border-blue-200">แก้ไข</button>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" class="text-red-600 hover:bg-red-50 px-3 py-1.5 rounded text-sm font-bold transition border border-transparent hover:border-red-200">ลบ</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openModal(mode, id = null) {
+            isEditMode = (mode === 'edit');
+            document.getElementById('modalTitle').innerText = isEditMode ? 'แก้ไขข้อมูลผู้ใช้งาน' : 'เพิ่มผู้ใช้งานใหม่';
+            document.getElementById('pwdHint').innerText = isEditMode ? '(ปล่อยว่างไว้หากไม่ต้องการเปลี่ยนรหัส)' : '(จำเป็นต้องกรอก)';
+            
+            if(isEditMode) {
+                const user = usersData.find(u => u.id == id); 
+                if(!user) return alert("ไม่พบข้อมูลผู้ใช้นี้");
+
+                document.getElementById('userId').value = user.id;
+                document.getElementById('userFullname').value = user.fullname;
+                document.getElementById('userUsername').value = user.username;
+                document.getElementById('userRole').value = user.role;
+                document.getElementById('userPassword').value = ''; 
+                
+                if (user.id == currentUser.id) {
+                    document.getElementById('userRole').disabled = true;
+                    document.getElementById('userRole').title = "ไม่สามารถเปลี่ยนระดับสิทธิ์ของตัวเองได้";
+                } else {
+                    document.getElementById('userRole').disabled = false;
+                    document.getElementById('userRole').title = "";
+                }
+            } else {
+                document.getElementById('userId').value = '';
+                document.getElementById('userFullname').value = '';
+                document.getElementById('userUsername').value = '';
+                document.getElementById('userPassword').value = '';
+                document.getElementById('userRole').value = 'user';
+                document.getElementById('userRole').disabled = false;
+            }
+            
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        function closeModal() { 
+            document.getElementById('userModal').classList.add('hidden'); 
+        }
+
+        async function saveUser() {
+            document.getElementById('userRole').disabled = false;
+            
+            const payload = {
+                action: isEditMode ? 'edit_user' : 'add_user',
+                id: document.getElementById('userId').value,
+                fullname: document.getElementById('userFullname').value,
+                username: document.getElementById('userUsername').value,
+                password: document.getElementById('userPassword').value,
+                role: document.getElementById('userRole').value
+            };
+
+            if(!payload.username || !payload.fullname) {
+                return alert('กรุณากรอกชื่อ-นามสกุล และ Username ให้ครบถ้วน');
+            }
+            if(!isEditMode && !payload.password) {
+                return alert('กรุณาตั้งรหัสผ่านสำหรับผู้ใช้ใหม่');
+            }
+
+            try {
+                const res = await fetch('api.php', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                });
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    if (isEditMode && payload.id == currentUser.id) {
+                        currentUser.fullname = payload.fullname;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        let topbarName = document.getElementById('topbarUserName');
+                        if(topbarName) topbarName.innerText = currentUser.fullname;
+                        
+                        let profilePic = document.getElementById('userProfilePic');
+                        if(profilePic) {
+                            profilePic.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullname)}&background=0ea5e9&color=fff&size=128&bold=true`;
+                        }
+                    }
+
+                    alert(isEditMode ? 'แก้ไขข้อมูลเรียบร้อยแล้ว' : 'เพิ่มผู้ใช้สำเร็จ');
+                    closeModal(); 
+                    loadUsers();
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + (result.message || 'ไม่ทราบสาเหตุ'));
+                }
+            } catch(err) { 
+                alert('ข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์'); 
+            }
+        }
+
+        async function deleteUser(id, username) {
+            if (id == currentUser.id) {
+                return alert('❌ ไม่สามารถลบบัญชีของตัวเองที่กำลังใช้งานอยู่ได้ครับ!');
+            }
+
+            if(!confirm(`ยืนยันการลบผู้ใช้ "${username}" ออกจากระบบถาวร?`)) return;
+            
+            try {
+                const res = await fetch('api.php', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({action: 'delete_user', id: id}) 
+                });
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    loadUsers();
+                } else {
+                    alert('ไม่สามารถลบได้: ' + result.message);
+                }
+            } catch(err) { 
+                alert('ข้อผิดพลาดเซิร์ฟเวอร์'); 
+            }
+        }
+    </script>
+</body>
+</html>

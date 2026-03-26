@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงานสถิติและแนวโน้มผลการเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f9ff; margin: 0; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .search-table-input {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 10px center;
+            background-size: 16px;
+            padding-left: 36px !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 bg-slate-50" onload="loadReportData()">
+
+    <nav class="bg-slate-900 shadow-md sticky top-0 z-40 border-b border-slate-700">
+        <div class="w-full px-4 md:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-6 h-full flex-1 overflow-x-auto hide-scrollbar">
+                <span class="text-white text-xl font-bold tracking-wider shrink-0 flex items-center gap-2 mr-2">
+                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    <span class="hidden md:inline">ระบบติดตามนักศึกษาภาวะวิกฤต</span>
+                </span>
+                
+                <div class="flex items-center gap-1">
+                    <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        สแกน PDF
+                    </a>
+                    <a href="view_data.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                        ฐานข้อมูลประวัติ
+                    </a>
+                    <a href="tracking.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        บันทึกการติดตาม
+                    </a>
+                    <a href="report.html" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30 transition shadow-inner text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        รายงานสถิติ
+                    </a>
+                    <a id="adminMenuLink" href="admin.html" class="hidden flex items-center gap-2 px-3 py-2 rounded-lg text-amber-400 hover:bg-slate-800 font-medium transition text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        จัดการผู้ใช้ (Admin)
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0 ml-4 pl-4 border-l border-slate-700">
+                <div class="hidden sm:flex flex-col items-end">
+                    <span class="text-[10px] text-slate-400 font-medium tracking-wide">ผู้ใช้งานระบบ</span>
+                    <span id="topbarUserName" class="text-sm font-bold text-white">กำลังโหลด...</span>
+                </div>
+                <div class="relative">
+                    <img id="userProfilePic" src="" alt="Profile" class="w-9 h-9 rounded-full border-2 border-slate-600 shadow-sm object-cover bg-slate-800">
+                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-500 border-2 border-slate-900 rounded-full"></div>
+                </div>
+                <button onclick="logout()" title="ออกจากระบบ" class="ml-1 text-slate-400 hover:text-red-400 bg-slate-800 hover:bg-red-500/10 p-2 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="p-4 md:p-6">
+        <div class="max-w-[1400px] mx-auto">
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 print:mb-2 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 tracking-tight">📊 ภาพรวมและสถิติ (Dashboard)</h1>
+                    <p class="text-sm text-slate-500 mt-1">สรุปข้อมูลนักศึกษาและวิเคราะห์แนวโน้มการติดซ้ำ</p>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm print:hidden">
+                        <label for="branchFilter" class="text-sm font-bold text-slate-600 whitespace-nowrap">🎓 สาขา:</label>
+                        <select id="branchFilter" onchange="applyFilter()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500 block p-1.5 outline-none cursor-pointer max-w-[180px] truncate">
+                            <option value="all">ทุกสาขาวิชา</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm print:hidden">
+                        <label for="termFilter" class="text-sm font-bold text-slate-600 whitespace-nowrap">📅 ปี/เทอม:</label>
+                        <select id="termFilter" onchange="applyFilter()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500 block p-1.5 outline-none cursor-pointer">
+                            <option value="all">ภาพรวมทั้งหมด</option>
+                        </select>
+                    </div>
+
+                    <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-bold shadow transition flex items-center text-sm print:hidden whitespace-nowrap h-[38px]">
+                        🖨️ พิมพ์
+                    </button>
+                </div>
+            </div>
+
+            <div id="loading" class="mb-6 p-5 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
+                <p class="text-lg font-bold text-blue-800 animate-pulse">กำลังประมวลผลข้อมูล...</p>
+            </div>
+
+            <div id="reportContent" class="hidden">
+                
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-slate-400 flex flex-col justify-center text-center">
+                        <p class="text-xs text-slate-500 font-bold mb-1">นศ. ทั้งหมด</p>
+                        <p class="text-3xl font-black text-slate-700" id="kpiTotal">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-red-600 flex flex-col justify-center text-center bg-red-50/30">
+                        <p class="text-xs text-red-600 font-bold mb-1">วิกฤต</p>
+                        <p class="text-3xl font-black text-red-600" id="kpiCrisis">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-red-400 flex flex-col justify-center text-center bg-red-50/10">
+                        <p class="text-xs text-red-500 font-bold mb-1">รอพินิจ 2</p>
+                        <p class="text-3xl font-black text-red-500" id="kpiProb2">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-orange-400 flex flex-col justify-center text-center bg-orange-50/30">
+                        <p class="text-xs text-orange-500 font-bold mb-1">รอพินิจ 1</p>
+                        <p class="text-3xl font-black text-orange-500" id="kpiProb1">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-yellow-400 flex flex-col justify-center text-center bg-yellow-50/30">
+                        <p class="text-xs text-yellow-600 font-bold mb-1">รอพินิจ (ทั่วไป)</p>
+                        <p class="text-3xl font-black text-yellow-500" id="kpiProbGen">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-yellow-50 p-4 rounded-xl shadow-sm border border-yellow-200 flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-yellow-800 font-bold">เพิ่งติดกลุ่มเสี่ยงครั้งแรก</p>
+                            <p class="text-xs text-yellow-600">เฝ้าระวังเบื้องต้น</p>
+                        </div>
+                        <p class="text-3xl font-black text-yellow-600"><span id="sumRepeat1">0</span> <span class="text-sm font-normal">คน</span></p>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-xl shadow-sm border border-orange-200 flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-orange-800 font-bold">ติดซ้ำ 2 เทอม</p>
+                            <p class="text-xs text-orange-600">มีความเสี่ยงสูง</p>
+                        </div>
+                        <p class="text-3xl font-black text-orange-600"><span id="sumRepeat2">0</span> <span class="text-sm font-normal">คน</span></p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-xl shadow-sm border border-red-200 flex justify-between items-center relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-16 h-16 bg-red-100 rounded-bl-full -z-0"></div>
+                        <div class="z-10">
+                            <p class="text-sm text-red-800 font-bold">ติดซ้ำ 3 เทอมขึ้นไป</p>
+                            <p class="text-xs text-red-600 font-medium">อันตราย / ต้องเรียกพบด่วน</p>
+                        </div>
+                        <p class="text-3xl font-black text-red-600 z-10"><span id="sumRepeat3">0</span> <span class="text-sm font-normal">คน</span></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="lg:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">📊 จำนวนนักศึกษาตามสถานะ (แยกรายเทอม)</h2>
+                        <div class="relative h-[300px] w-full">
+                            <canvas id="termChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">🎯 สัดส่วนกลุ่มเสี่ยงตามสาขา</h2>
+                        <div class="relative flex-1 w-full flex justify-center items-center min-h-[250px]">
+                            <canvas id="branchChart"></canvas>
+                        </div>
+                        <p class="text-[11px] text-center text-slate-400 mt-2">*สัดส่วนเฉพาะนักศึกษาในกลุ่มวิกฤต และ รอพินิจ</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-8">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2">
+                        📈 จำนวนนักศึกษาที่มีการติดกลุ่มเสี่ยงซ้อน (เทียบรายเทอม)
+                    </h2>
+                    <div class="relative h-[250px] w-full">
+                        <canvas id="repeatTrendChart"></canvas>
+                    </div>
+                    <p class="text-[12px] text-center text-slate-500 mt-3">*กราฟนี้แสดงจำนวนนักศึกษาที่มีประวัติติดกลุ่มเสี่ยง <span class="text-orange-500 font-bold">2 เทอม</span> และ <span class="text-red-500 font-bold">3 เทอมขึ้นไป</span> เพื่อให้ดูเปรียบเทียบจำนวนได้ชัดเจน</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                    <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-lg font-bold text-slate-800">⚠️ รายชื่อกลุ่มเสี่ยง (วิกฤต และ รอพินิจ 2)</h2>
+                            <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full border border-red-200" id="urgentCount">0 คน</span>
+                        </div>
+                        
+                        <div class="w-full sm:w-64 print:hidden">
+                            <input type="text" id="searchUrgentInput" onkeyup="searchUrgentTable()" placeholder="ค้นหารหัส, ชื่อ, สาขา..." 
+                                   class="w-full border border-slate-300 rounded-lg py-1.5 pr-3 text-sm focus:ring-blue-500 focus:border-blue-500 outline-none transition search-table-input bg-white">
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-white text-slate-600 border-b border-slate-200 uppercase text-xs tracking-wider">
+                                <tr>
+                                    <th class="px-5 py-3 w-24">เทอม</th>
+                                    <th class="px-5 py-3 w-32">รหัส</th>
+                                    <th class="px-5 py-3">ชื่อ-นามสกุล</th>
+                                    <th class="px-5 py-3">สาขาวิชา</th>
+                                    <th class="px-5 py-3 text-center">GPA</th>
+                                    <th class="px-5 py-3 text-center">สถานะ</th>
+                                    <th class="px-5 py-3 text-center border-l border-slate-100 bg-slate-50/50">ความถี่ที่ติดซ้ำ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="urgentTableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let termChartInstance = null;
+        let branchChartInstance = null;
+        let repeatTrendChartInstance = null; 
+        let allReportData = [];
+        
+        let currentUrgentStudents = []; 
+        let currentRepeatRiskMap = {};
+
+        async function loadReportData() {
+            document.getElementById('loading').classList.remove('hidden');
+            try {
+                const response = await fetch('api.php?action=get_all');
+                const textData = await response.text();
+                
+                let result;
+                try { result = JSON.parse(textData); } 
+                catch (e) { throw new Error("การตอบกลับจากเซิร์ฟเวอร์ผิดปกติ"); }
+
+                let rawData = Array.isArray(result) ? result : (result.data || []);
+                
+                allReportData = rawData.map(std => ({
+                    ...std,
+                    name: std.name || std.fullname || "ไม่ระบุชื่อ",
+                    status_text: (std.status_text || std.status || "ไม่ระบุสถานะ").trim(),
+                    branch: std.branch || "ไม่ระบุ"
+                }));
+
+                populateTermFilter(allReportData);
+                populateBranchFilter(allReportData);
+                processDashboard(allReportData, 'all', 'all');
+                document.getElementById('reportContent').classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                alert("เชื่อมต่อฐานข้อมูลล้มเหลว หรืออาจจะยังไม่มีข้อมูลในระบบครับ");
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        function populateTermFilter(data) {
+            let termsSet = new Set(data.map(s => `${s.academic_year}/${s.term}`));
+            let termsArray = Array.from(termsSet).sort().reverse(); 
+            
+            const filterSelect = document.getElementById('termFilter');
+            filterSelect.innerHTML = '<option value="all">ภาพรวมทั้งหมด</option>';
+            termsArray.forEach(term => {
+                if(term && !term.includes("undefined")) {
+                    let option = document.createElement('option');
+                    option.value = term;
+                    let [year, t] = term.split('/');
+                    option.text = `ปี ${year} เทอม ${t}`;
+                    filterSelect.appendChild(option);
+                }
+            });
+        }
+
+        function populateBranchFilter(data) {
+            let branchSet = new Set(data.map(s => s.branch).filter(b => b && b !== '-'));
+            let branchArray = Array.from(branchSet).sort();
+            
+            const filterSelect = document.getElementById('branchFilter');
+            filterSelect.innerHTML = '<option value="all">ทุกสาขาวิชา</option>';
+            branchArray.forEach(branch => {
+                let option = document.createElement('option');
+                option.value = branch;
+                option.text = branch;
+                filterSelect.appendChild(option);
+            });
+        }
+
+        const getStatusCount = (dataArray, statusType) => {
+            return dataArray.filter(s => {
+                let st = s.status_text;
+                if (statusType === 'ปกติ') return st.includes('ปกติ');
+                if (statusType === 'วิกฤต') return st.includes('วิกฤต');
+                if (statusType === 'รอพินิจ (ทั่วไป)') return st === 'รอพินิจ' || st === 'รอพินิจ (ทั่วไป)';
+                if (statusType === 'รอพินิจ 1') return st.includes('รอพินิจ 1');
+                if (statusType === 'รอพินิจ 2') return st.includes('รอพินิจ 2');
+                if (statusType === 'ถอนชื่อ') return st.includes('ถอนชื่อ');
+                if (statusType === 'ลาออก') return st.includes('ลาออก');
+                if (statusType === 'พ้นสภาพ') return st.includes('พ้นสภาพ');
+                return false;
+            }).length;
+        }
+
+        function applyFilter() {
+            let selectedTerm = document.getElementById('termFilter').value;
+            let selectedBranch = document.getElementById('branchFilter').value;
+            document.getElementById('searchUrgentInput').value = '';
+            processDashboard(allReportData, selectedTerm, selectedBranch);
+        }
+
+        function processDashboard(data, selectedTerm, selectedBranch) {
+            let filteredData = data;
+            
+            if (selectedTerm !== 'all') {
+                filteredData = filteredData.filter(s => `${s.academic_year}/${s.term}` === selectedTerm);
+            }
+            if (selectedBranch !== 'all') {
+                filteredData = filteredData.filter(s => s.branch === selectedBranch);
+            }
+
+            document.getElementById('kpiTotal').innerText = filteredData.length;
+            document.getElementById('kpiCrisis').innerText = getStatusCount(filteredData, 'วิกฤต');
+            document.getElementById('kpiProbGen').innerText = getStatusCount(filteredData, 'รอพินิจ (ทั่วไป)');
+            document.getElementById('kpiProb1').innerText = getStatusCount(filteredData, 'รอพินิจ 1');
+            document.getElementById('kpiProb2').innerText = getStatusCount(filteredData, 'รอพินิจ 2');
+            
+            let chartBaseData = selectedBranch !== 'all' ? data.filter(s => s.branch === selectedBranch) : data;
+            let termsSet = new Set(chartBaseData.map(s => `${s.academic_year}/${s.term}`));
+            let termsArray = Array.from(termsSet).sort(); 
+
+            let normalByTerm = [], crisisByTerm = [], probGenByTerm = [];
+            let prob1ByTerm = [], prob2ByTerm = [], withdrawByTerm = [];
+            let resignByTerm = [], dismissByTerm = [];
+
+            termsArray.forEach(termKey => {
+                let stds = chartBaseData.filter(s => `${s.academic_year}/${s.term}` === termKey);
+                normalByTerm.push(getStatusCount(stds, 'ปกติ'));
+                crisisByTerm.push(getStatusCount(stds, 'วิกฤต'));
+                probGenByTerm.push(getStatusCount(stds, 'รอพินิจ (ทั่วไป)'));
+                prob1ByTerm.push(getStatusCount(stds, 'รอพินิจ 1'));
+                prob2ByTerm.push(getStatusCount(stds, 'รอพินิจ 2'));
+                withdrawByTerm.push(getStatusCount(stds, 'ถอนชื่อ'));
+                resignByTerm.push(getStatusCount(stds, 'ลาออก'));
+                dismissByTerm.push(getStatusCount(stds, 'พ้นสภาพ'));
+            });
+
+            drawTermChart(termsArray, normalByTerm, crisisByTerm, probGenByTerm, prob1ByTerm, prob2ByTerm, withdrawByTerm, resignByTerm, dismissByTerm);
+
+            let riskStudents = filteredData.filter(s => {
+                let st = s.status_text;
+                return st.includes('วิกฤต') || st.includes('รอพินิจ');
+            });
+            let branchCounts = {};
+            riskStudents.forEach(s => {
+                let branch = s.branch || "ไม่ระบุ";
+                branchCounts[branch] = (branchCounts[branch] || 0) + 1;
+            });
+            drawBranchChart(Object.keys(branchCounts), Object.values(branchCounts));
+
+            // การคำนวณสำหรับกราฟซ้ำซ้อน
+            let allRiskStudentsData = chartBaseData.filter(s => s.status_text.includes('วิกฤต') || s.status_text.includes('รอพินิจ'));
+            let stdHistoryMap = {};
+            allRiskStudentsData.forEach(s => {
+                if(!stdHistoryMap[s.student_id]) stdHistoryMap[s.student_id] = [];
+                stdHistoryMap[s.student_id].push(`${s.academic_year}/${s.term}`);
+            });
+
+            let repeat2Trend = [];
+            let repeat3Trend = [];
+
+            termsArray.forEach((termKey, index) => {
+                let r2 = 0;
+                let r3 = 0;
+                let currentStds = allRiskStudentsData.filter(s => `${s.academic_year}/${s.term}` === termKey);
+                
+                currentStds.forEach(std => {
+                    let hist = stdHistoryMap[std.student_id];
+                    let hasPrev1 = index >= 1 && hist.includes(termsArray[index - 1]);
+                    let hasPrev2 = index >= 2 && hist.includes(termsArray[index - 2]);
+
+                    if (hasPrev1 && hasPrev2) {
+                        r3++;
+                    } else if (hasPrev1) {
+                        r2++;
+                    }
+                });
+                repeat2Trend.push(r2);
+                repeat3Trend.push(r3);
+            });
+            
+            // วาดกราฟแท่งแนวโน้มแบบใหม่
+            drawRepeatTrendChart(termsArray, repeat2Trend, repeat3Trend);
+
+            currentRepeatRiskMap = calculateRepeatRisk(data, selectedTerm, selectedBranch);
+            updateRepeatSummary(currentRepeatRiskMap);
+
+            currentUrgentStudents = filteredData.filter(s => 
+                s.status_text.includes('วิกฤต') || s.status_text.includes('รอพินิจ 2')
+            );
+            currentUrgentStudents.sort((a, b) => parseFloat(a.gpa) - parseFloat(b.gpa));
+            document.getElementById('urgentCount').innerText = `${currentUrgentStudents.length} คน`;
+            
+            renderUrgentTable(currentUrgentStudents, selectedTerm, currentRepeatRiskMap);
+        }
+
+        function searchUrgentTable() {
+            const keyword = document.getElementById('searchUrgentInput').value.toLowerCase();
+            const filteredUrgent = currentUrgentStudents.filter(std => 
+                std.student_id.toLowerCase().includes(keyword) || 
+                std.name.toLowerCase().includes(keyword) || 
+                (std.branch && std.branch.toLowerCase().includes(keyword))
+            );
+            
+            renderUrgentTable(filteredUrgent, document.getElementById('termFilter').value, currentRepeatRiskMap);
+            document.getElementById('urgentCount').innerText = `${filteredUrgent.length} คน (จากผลค้นหา)`;
+        }
+
+        function updateRepeatSummary(riskMap) {
+            let count3 = 0, count2 = 0, count1 = 0;
+            
+            Object.values(riskMap).forEach(risk => {
+                if (risk.rawCount >= 3) count3++;
+                else if (risk.rawCount === 2) count2++;
+                else if (risk.rawCount === 1) count1++;
+            });
+
+            document.getElementById('sumRepeat3').innerText = count3;
+            document.getElementById('sumRepeat2').innerText = count2;
+            document.getElementById('sumRepeat1').innerText = count1;
+        }
+
+        function calculateRepeatRisk(fullData, selectedTerm, selectedBranch) {
+            let baseData = selectedBranch !== 'all' ? fullData.filter(s => s.branch === selectedBranch) : fullData;
+
+            let termsSet = new Set(baseData.map(s => `${s.academic_year}/${s.term}`));
+            let termsArray = Array.from(termsSet).sort((a, b) => {
+                return parseInt(a.replace('/', '')) - parseInt(b.replace('/', ''));
+            });
+
+            let termIndexMap = {};
+            termsArray.forEach((t, i) => termIndexMap[t] = i);
+
+            const riskKeywords = ['วิกฤต', 'รอพินิจ'];
+            let riskData = baseData.filter(s => riskKeywords.some(kw => s.status_text.includes(kw)));
+
+            let studentHistory = {};
+            riskData.forEach(s => {
+                if (!studentHistory[s.student_id]) {
+                    studentHistory[s.student_id] = { terms: [] };
+                }
+                studentHistory[s.student_id].terms.push(`${s.academic_year}/${s.term}`);
+            });
+
+            let riskMap = {};
+            let targetTermIndex = selectedTerm === 'all' ? termsArray.length - 1 : termIndexMap[selectedTerm];
+
+            Object.keys(studentHistory).forEach(id => {
+                let stdTermIndices = studentHistory[id].terms.map(t => termIndexMap[t]);
+
+                if (selectedTerm !== 'all' && !stdTermIndices.includes(targetTermIndex)) return;
+
+                let latestRiskIndex = selectedTerm === 'all' ? Math.max(...stdTermIndices) : targetTermIndex;
+                let totalRiskCount = 0;
+
+                for (let i = 0; i <= 2; i++) {
+                    if (stdTermIndices.includes(latestRiskIndex - i)) {
+                        totalRiskCount++;
+                    }
+                }
+
+                let badgeStyle = 'bg-yellow-50 text-yellow-700 border-yellow-200'; 
+                let dotColor = 'bg-yellow-400';
+
+                if (totalRiskCount === 2) {
+                    badgeStyle = 'bg-orange-50 text-orange-700 border-orange-200'; 
+                    dotColor = 'bg-orange-500';
+                } else if (totalRiskCount >= 3) {
+                    badgeStyle = 'bg-red-50 text-red-700 border-red-200 animate-pulse'; 
+                    dotColor = 'bg-red-600';
+                }
+
+                riskMap[id] = { 
+                    rawCount: totalRiskCount, 
+                    badgeStyle: badgeStyle,
+                    dotColor: dotColor
+                };
+            });
+
+            return riskMap;
+        }
+
+        function renderUrgentTable(students, selectedTerm, riskMap) {
+            const tbody = document.getElementById('urgentTableBody');
+            tbody.innerHTML = '';
+            
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-500 font-medium">🎉 ยอดเยี่ยม! ไม่พบนักศึกษากลุ่มเสี่ยงในเงื่อนไขนี้</td></tr>`;
+                return;
+            }
+
+            students.forEach(std => {
+                let badgeClass = "bg-slate-100 text-slate-800";
+                let st = std.status_text;
+                
+                if (st.includes("วิกฤต")) badgeClass = "bg-red-100 text-red-800 border-red-200";
+                else if (st.includes("รอพินิจ 2")) badgeClass = "bg-red-50 text-red-700 border-red-200";
+                else if (st.includes("รอพินิจ 1")) badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
+                else if (st === "รอพินิจ (ทั่วไป)" || st === "รอพินิจ") badgeClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
+                
+                let risk = riskMap[std.student_id] || { rawCount: 1, badgeStyle: 'bg-yellow-50 text-yellow-700 border-yellow-200', dotColor: 'bg-yellow-400' };
+
+                let tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="px-5 py-3 font-semibold text-slate-600">${std.academic_year}/${std.term}</td>
+                    <td class="px-5 py-3 font-mono text-slate-500">${std.student_id}</td>
+                    <td class="px-5 py-3 font-bold text-slate-800">${std.name}</td>
+                    <td class="px-5 py-3 text-slate-500">${std.branch || '-'}</td>
+                    <td class="px-5 py-3 text-center font-bold text-slate-700">${std.gpa}</td>
+                    <td class="px-5 py-3 text-center"><span class="px-2.5 py-1 border rounded-md text-xs font-bold ${badgeClass}">${std.status_text}</span></td>
+                    <td class="px-5 py-3 text-center border-l border-slate-100 bg-slate-50/30">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-sm ${risk.badgeStyle}">
+                            <span class="w-2 h-2 rounded-full ${risk.dotColor}"></span>
+                            ${risk.rawCount} ครั้ง
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function drawTermChart(labels, normalData, crisisData, probGenData, prob1Data, prob2Data, withdrawData, resignData, dismissData) {
+            const ctx = document.getElementById('termChart').getContext('2d');
+            if(termChartInstance) termChartInstance.destroy();
+
+            termChartInstance = new Chart(ctx, {
+                type: 'bar', 
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'ปกติ', data: normalData, backgroundColor: '#22c55e', borderRadius: 4 },
+                        { label: 'วิกฤต', data: crisisData, backgroundColor: '#ef4444', borderRadius: 4 },
+                        { label: 'รอพินิจ (ทั่วไป)', data: probGenData, backgroundColor: '#eab308', borderRadius: 4 },
+                        { label: 'รอพินิจ 1', data: prob1Data, backgroundColor: '#f97316', borderRadius: 4 },
+                        { label: 'รอพินิจ 2', data: prob2Data, backgroundColor: '#dc2626', borderRadius: 4 },
+                        { label: 'ถอนชื่อ', data: withdrawData, backgroundColor: '#a855f7', borderRadius: 4 },
+                        { label: 'ลาออก', data: resignData, backgroundColor: '#ec4899', borderRadius: 4 },
+                        { label: 'พ้นสภาพ', data: dismissData, backgroundColor: '#64748b', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        x: { 
+                            grid: { display: true, color: '#cbd5e1', drawOnChartArea: true, drawTicks: false } 
+                        }, 
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1 },
+                            grid: { color: '#f1f5f9' }
+                        } 
+                    },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Sarabun' } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    }
+                }
+            });
+        }
+
+        // --- แก้ไข: เปลี่ยนกราฟแนวโน้มการติดซ้ำซ้อนให้เป็นแบบแท่ง (Bar Chart) ---
+        function drawRepeatTrendChart(labels, data2, data3) {
+            const ctx = document.getElementById('repeatTrendChart').getContext('2d');
+            if(repeatTrendChartInstance) repeatTrendChartInstance.destroy();
+
+            repeatTrendChartInstance = new Chart(ctx, {
+                type: 'bar', // เปลี่ยนจาก line เป็น bar
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { 
+                            label: 'ติดซ้ำ 2 เทอมติด', 
+                            data: data2, 
+                            backgroundColor: '#f97316', // สีส้ม
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        },
+                        { 
+                            label: 'ติดซ้ำ 3 เทอมติดขึ้นไป', 
+                            data: data3, 
+                            backgroundColor: '#dc2626', // สีแดง
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        x: { 
+                            grid: { display: false, drawBorder: false } 
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            min: 0, 
+                            ticks: { stepSize: 1, precision: 0 }, 
+                            grid: { color: '#f1f5f9' } 
+                        }
+                    },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Sarabun' } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    }
+                }
+            });
+        }
+        // ----------------------------------------------------------------------
+
+        function drawBranchChart(labels, dataObj) {
+            const ctx = document.getElementById('branchChart').getContext('2d');
+            if(branchChartInstance) branchChartInstance.destroy();
+
+            if(labels.length === 0) {
+                labels = ["ไม่มีข้อมูลกลุ่มเสี่ยง"];
+                dataObj = [1];
+            }
+
+            const bgColors = ['#f87171', '#fb923c', '#fbbf24', '#34d399', '#60a5fa', '#818cf8', '#a78bfa', '#f472b6'];
+
+            branchChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataObj,
+                        backgroundColor: labels[0] === "ไม่มีข้อมูลกลุ่มเสี่ยง" ? ['#f1f5f9'] : bgColors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Sarabun' } } } }
+                }
+            });
+        }
+
+    </script>
+    <script>
+        try {
+            var currentUserStr = localStorage.getItem('currentUser');
+            if (!currentUserStr) throw new Error("Not logged in");
+            var currentUser = JSON.parse(currentUserStr);
+            
+            let topbarName = document.getElementById('topbarUserName');
+            if(topbarName) topbarName.innerText = currentUser.fullname;
+
+            let profilePic = document.getElementById('userProfilePic');
+            if(profilePic && currentUser.fullname) {
+                profilePic.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser.fullname) + "&background=0ea5e9&color=fff";
+            }
+
+            if (currentUser.role === 'admin') {
+                document.getElementById('adminMenuLink').classList.remove('hidden');
+            }
+        } catch (e) {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            if(confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>

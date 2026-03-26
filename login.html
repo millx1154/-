@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - ระบบติดตามนักศึกษาภาวะวิกฤต</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; margin: 0; }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 to-indigo-800 p-4">
+
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
+        
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-black text-gray-800 tracking-tight">ระบบติดตามนักศึกษาภาวะวิกฤต</h1>
+            <p class="text-gray-500 mt-2 text-sm">เข้าสู่ระบบจัดการประวัตินักศึกษา</p>
+        </div>
+
+        <div class="space-y-5">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">เข้าใช้งานในฐานะ</label>
+                <div class="flex gap-4">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="role" value="user" class="peer sr-only" checked>
+                        <div class="p-3 text-center rounded-lg border-2 border-gray-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 font-bold text-sm transition">
+                             เจ้าหน้าที่ (Staff)
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="role" value="admin" class="peer sr-only">
+                        <div class="p-3 text-center rounded-lg border-2 border-gray-200 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 font-bold text-sm transition">
+                             ผู้ดูแล (Admin)
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">ชื่อผู้ใช้ (Username)</label>
+                <input type="text" id="username" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="กรอกชื่อผู้ใช้งาน">
+            </div>
+            
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-sm font-bold text-gray-700">รหัสผ่าน</label>
+                    <a href="forgot_password.html" class="text-xs font-bold text-blue-600 hover:underline">ลืมรหัสผ่าน?</a>
+                </div>
+                <input type="password" id="password" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="กรอกรหัสผ่าน">
+            </div>
+
+            <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition mt-4 text-lg">
+                เข้าสู่ระบบ
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function login() {
+            const role = document.querySelector('input[name="role"]:checked').value;
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if(!user || !pass) return alert("กรุณากรอก Username และรหัสผ่านให้ครบถ้วน");
+
+            try {
+                const response = await fetch('api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'login', username: user, password: pass, role: role })
+                });
+                
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    // เก็บข้อมูลการล็อกอินไว้ใน LocalStorage
+                    localStorage.setItem('currentUser', JSON.stringify(result.user));
+                    
+                    // แยกพาไปหน้าต่างๆ ตามสิทธิ์
+                    if(role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) { alert("เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว"); }
+        }
+    </script>
+</body>
+</html>

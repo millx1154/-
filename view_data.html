@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฐานข้อมูลประวัตินักศึกษา</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f9ff; margin: 0; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-gray-800" onload="loadStudentsData()">
+
+    <nav class="bg-slate-900 shadow-md sticky top-0 z-40 border-b border-slate-700">
+    <div class="w-full px-4 md:px-8 h-16 flex items-center justify-between">
+        
+        <div class="flex items-center gap-6 h-full flex-1 overflow-x-auto hide-scrollbar">
+            <span class="text-white text-xl font-bold tracking-wider shrink-0 flex items-center gap-2 mr-2">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <span class="hidden md:inline">ระบบติดตามนักศึกษาภาวะวิกฤต</span>
+            </span>
+            
+            <div class="flex items-center gap-1">
+                <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    สแกน PDF
+                </a>
+                
+                <a href="view_data.html" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30 transition shadow-inner text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                    ฐานข้อมูลประวัติ
+                </a>
+                
+                <a href="tracking.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    บันทึกการติดตาม
+                </a>
+                
+                <a href="report.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    รายงานสถิติ
+                </a>
+                
+                <a id="adminMenuLink" href="admin.html" class="hidden flex items-center gap-2 px-3 py-2 rounded-lg text-amber-400 hover:bg-slate-800 font-medium transition text-sm whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    จัดการผู้ใช้ (Admin)
+                </a>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0 ml-4 pl-4 border-l border-slate-700">
+                <div class="hidden sm:flex flex-col items-end">
+                    <span class="text-[10px] text-slate-400 font-medium tracking-wide">ผู้ใช้งานระบบ</span>
+                    <span id="topbarUserName" class="text-sm font-bold text-white">กำลังโหลด...</span>
+                </div>
+                <div class="relative">
+                    <img id="userProfilePic" src="" alt="Profile" class="w-9 h-9 rounded-full border-2 border-slate-600 shadow-sm object-cover bg-slate-800">
+                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-500 border-2 border-slate-900 rounded-full"></div>
+                </div>
+                <button onclick="logout()" title="ออกจากระบบ" class="ml-1 text-slate-400 hover:text-red-400 bg-slate-800 hover:bg-red-500/10 p-2 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+
+    </div>
+    </nav>
+
+    <div class="p-4 md:p-6">
+        <div class="max-w-[1400px] mx-auto">
+            
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight"> ฐานข้อมูลประวัตินักศึกษา</h1>
+                <p class="text-sm text-slate-500 mt-1">ค้นหา ตรวจสอบ และจัดการข้อมูลนักศึกษาทั้งหมดในระบบ</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">🔍 ค้นหา (รหัส หรือ ชื่อ)</label>
+                    <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="พิมพ์รหัส หรือ ชื่อ-นามสกุล..." class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                
+                <div class="w-full md:w-48">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">📅 ปี/เทอม</label>
+                    <select id="termFilter" onchange="applyFilters()" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer transition">
+                        <option value="all">ทุกเทอม</option>
+                    </select>
+                </div>
+
+                <div class="w-full md:w-56">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">🎓 สาขาวิชา</label>
+                    <select id="branchFilter" onchange="applyFilters()" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer transition">
+                        <option value="all">ทุกสาขาวิชา</option>
+                    </select>
+                </div>
+
+                <div class="w-full md:w-48">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">📌 สถานะ</label>
+                    <select id="statusFilter" onchange="applyFilters()" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer transition">
+                        <option value="all">ทุกสถานะ</option>
+                        <option value="ปกติ">ปกติ</option>
+                        <option value="วิกฤต">วิกฤต</option>
+                        <option value="รอพินิจ (ทั่วไป)">รอพินิจ (ทั่วไป)</option>
+                        <option value="รอพินิจ 1">รอพินิจ 1</option>
+                        <option value="รอพินิจ 2">รอพินิจ 2</option>
+                        <option value="ถอนชื่อ">ถอนชื่อ</option>
+                        <option value="ลาออก">ลาออก</option>
+                        <option value="พ้นสภาพ">พ้นสภาพ</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="loading" class="p-8 text-center bg-white rounded-2xl shadow-sm border border-slate-200 mb-6">
+                <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-slate-500 font-medium">กำลังโหลดข้อมูล กรุณารอสักครู่...</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hidden" id="tableContainer">
+                <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <span class="font-bold text-slate-700" id="resultCount">พบข้อมูล 0 รายการ</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left whitespace-nowrap">
+                        <thead class="bg-white text-slate-600 border-b">
+                            <tr>
+                                <th class="px-5 py-3 w-20">เทอม</th>
+                                <th class="px-5 py-3 w-32">รหัสนักศึกษา</th>
+                                <th class="px-5 py-3">ชื่อ-นามสกุล</th>
+                                <th class="px-5 py-3">สาขาวิชา</th>
+                                <th class="px-5 py-3 text-center">GPA</th>
+                                <th class="px-5 py-3 text-center">หน่วยกิตสะสม</th>
+                                <th class="px-5 py-3 text-center">สถานะ</th>
+                                <th class="px-5 py-3 text-center w-24">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.toggle('hidden');
+        }
+
+        let allStudentsData = []; // เก็บข้อมูลตั้งต้น
+
+        async function loadStudentsData() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('tableContainer').classList.add('hidden');
+            try {
+                const response = await fetch('api.php?action=get_all');
+                const textData = await response.text();
+                
+                let result = JSON.parse(textData);
+                allStudentsData = Array.isArray(result) ? result : (result.data || []);
+                
+                // คลีนข้อมูลและเซ็ตค่า Default
+                allStudentsData = allStudentsData.map(std => ({
+                    ...std,
+                    name: std.name || std.fullname || "-",
+                    status_text: (std.status_text || std.status || "ปกติ").trim(),
+                    gpa: std.gpa || "0.00",
+                    total_credits: std.total_credits || std.credits || "0",
+                    branch: std.branch || "-"
+                }));
+
+                populateTermFilter(allStudentsData);
+                populateBranchFilter(allStudentsData);
+                renderTable(allStudentsData);
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('tableContainer').classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('loading').innerHTML = `<p class="text-red-500 font-bold">เกิดข้อผิดพลาดในการดึงข้อมูลจากฐานข้อมูล</p>`;
+            }
+        }
+
+        // สร้างตัวเลือกปี/เทอม
+        function populateTermFilter(data) {
+            let termsSet = new Set(data.map(s => `${s.academic_year}/${s.term}`));
+            let termsArray = Array.from(termsSet).sort().reverse(); 
+            
+            const filterSelect = document.getElementById('termFilter');
+            filterSelect.innerHTML = '<option value="all">ทุกเทอม</option>';
+            termsArray.forEach(term => {
+                if(term !== "undefined/undefined" && term !== "/") {
+                    let option = document.createElement('option');
+                    option.value = term;
+                    option.text = term;
+                    filterSelect.appendChild(option);
+                }
+            });
+        }
+
+        // สร้างตัวเลือกสาขาวิชา
+        function populateBranchFilter(data) {
+            let branchSet = new Set(data.map(s => s.branch));
+            let branchArray = Array.from(branchSet).filter(b => b !== "-" && b.trim() !== "").sort(); 
+            
+            const filterSelect = document.getElementById('branchFilter');
+            filterSelect.innerHTML = '<option value="all">ทุกสาขาวิชา</option>';
+            branchArray.forEach(branch => {
+                let option = document.createElement('option');
+                option.value = branch;
+                option.text = branch;
+                filterSelect.appendChild(option);
+            });
+        }
+
+        // ฟังก์ชันกรองข้อมูล
+        function applyFilters() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const selectedTerm = document.getElementById('termFilter').value;
+            const selectedBranch = document.getElementById('branchFilter').value; 
+            const selectedStatus = document.getElementById('statusFilter').value;
+
+            const filteredData = allStudentsData.filter(std => {
+                const matchSearch = std.student_id.toLowerCase().includes(searchText) || std.name.toLowerCase().includes(searchText);
+                const termStr = `${std.academic_year}/${std.term}`;
+                const matchTerm = selectedTerm === 'all' || termStr === selectedTerm;
+                const matchBranch = selectedBranch === 'all' || std.branch === selectedBranch;
+                
+                let stdStatus = std.status_text;
+                if(stdStatus === "รอพินิจ") stdStatus = "รอพินิจ (ทั่วไป)";
+                const matchStatus = selectedStatus === 'all' || stdStatus === selectedStatus;
+
+                return matchSearch && matchTerm && matchBranch && matchStatus;
+            });
+
+            renderTable(filteredData);
+        }
+
+        // แมปสถานะเป็นสีป้ายกำกับ (Badge)
+        function getBadgeStyle(statusText) {
+            if (statusText === "ปกติ") return "bg-green-100 text-green-800 border-green-200";
+            if (statusText === "วิกฤต") return "bg-red-100 text-red-800 border-red-200";
+            if (statusText === "รอพินิจ 2") return "bg-red-50 text-red-700 border-red-200";
+            if (statusText === "รอพินิจ 1") return "bg-orange-100 text-orange-800 border-orange-200";
+            if (statusText === "รอพินิจ (ทั่วไป)" || statusText === "รอพินิจ") return "bg-yellow-100 text-yellow-800 border-yellow-200";
+            if (statusText === "ถอนชื่อ") return "bg-purple-100 text-purple-800 border-purple-200";
+            if (statusText === "ลาออก") return "bg-pink-100 text-pink-800 border-pink-200";
+            if (statusText === "พ้นสภาพ") return "bg-slate-200 text-slate-800 border-slate-300";
+            return "bg-slate-100 text-slate-800 border-slate-200"; 
+        }
+
+        // สร้างตาราง
+        function renderTable(data) {
+            const tbody = document.getElementById('studentTableBody');
+            document.getElementById('resultCount').innerText = `พบข้อมูล ${data.length} รายการ`;
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500">ไม่พบข้อมูลนักศึกษาที่ตรงกับเงื่อนไข</td></tr>`;
+                return;
+            }
+
+            data.forEach((std) => {
+                let badgeClass = getBadgeStyle(std.status_text);
+                
+                let tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/50 transition";
+                tr.innerHTML = `
+                    <td class="px-5 py-3 text-slate-500">${std.academic_year}/${std.term}</td>
+                    <td class="px-5 py-3 font-mono font-medium text-slate-700">${std.student_id}</td>
+                    <td class="px-5 py-3 text-slate-800">${std.name}</td>
+                    <td class="px-5 py-3 text-slate-600">${std.branch}</td>
+                    <td class="px-5 py-3 text-center font-semibold text-slate-700">${std.gpa}</td>
+                    <td class="px-5 py-3 text-center text-slate-600">${std.total_credits}</td>
+                    <td class="px-5 py-3 text-center">
+                        <span class="px-2 py-1 border rounded-md text-xs font-bold ${badgeClass}">
+                            ${std.status_text}
+                        </span>
+                    </td>
+                    <td class="px-5 py-3 text-center">
+                        <button onclick="deleteStudent('${std.id || std.student_id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition" title="ลบข้อมูล">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ฟังก์ชันลบข้อมูล
+        async function deleteStudent(id) {
+            if(!id) return alert('ไม่พบ ID สำหรับลบข้อมูล');
+            if(confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนักศึกษารายนี้?')) {
+                try {
+                    const response = await fetch(`api.php?action=delete&id=${id}`, { method: 'GET' });
+                    const res = await response.json();
+                    
+                    if(res.success || res.status === 'success') {
+                        loadStudentsData();
+                    } else {
+                        alert('ลบข้อมูลสำเร็จ');
+                        loadStudentsData();
+                    }
+                } catch(e) {
+                    console.error(e);
+                    alert('ส่งคำสั่งลบแล้ว (ตรวจสอบ API หลังบ้านอีกครั้ง)');
+                    loadStudentsData();
+                }
+            }
+        }
+    </script>
+    
+    <script>
+        var currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            alert("🔒 กรุณาเข้าสู่ระบบก่อนใช้งานครับ");
+            window.location.href = 'login.html';
+        } else {
+            let sidebarName = document.getElementById('sidebarUserName');
+            if(sidebarName) sidebarName.innerText = currentUser.fullname;
+
+            let topbarName = document.getElementById('topbarUserName');
+            if(topbarName) topbarName.innerText = currentUser.fullname;
+
+            // เปลี่ยนสีโปรไฟล์เป็นสีฟ้า (0ea5e9)
+            let profilePic = document.getElementById('userProfilePic');
+            if(profilePic) {
+                profilePic.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullname)}&background=0ea5e9&color=fff&size=128&bold=true`;
+            }
+
+            if (currentUser.role === 'admin') {
+                let adminMenu = document.getElementById('adminMenuLink');
+                if (adminMenu) adminMenu.classList.remove('hidden'); 
+            }
+        }
+
+        function logout() {
+            if(confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
+                localStorage.removeItem('currentUser'); 
+                window.location.href = 'login.html';    
+            }
+        }
+    </script>
+</body>
+</html>

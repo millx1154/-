@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกการติดตามนักศึกษากลุ่มเสี่ยง</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f9ff; margin: 0; }
+        .modal-open { overflow: hidden; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-slate-800 bg-slate-50" onload="loadAtRiskData()">
+
+    <nav class="bg-slate-900 shadow-md sticky top-0 z-40 border-b border-slate-700">
+        <div class="w-full px-4 md:px-8 h-16 flex items-center justify-between">
+            
+            <div class="flex items-center gap-6 h-full flex-1 overflow-x-auto hide-scrollbar">
+                <span class="text-white text-xl font-bold tracking-wider shrink-0 flex items-center gap-2 mr-2">
+                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    <span class="hidden md:inline">ระบบติดตามนักศึกษาภาวะวิกฤต</span>
+                </span>
+                
+                <div class="flex items-center gap-1">
+                    <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        สแกน PDF
+                    </a>
+                    
+                    <a href="view_data.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                        ฐานข้อมูลประวัติ
+                    </a>
+                    
+                    <a href="tracking.html" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30 transition shadow-inner text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        บันทึกการติดตาม
+                    </a>
+                    
+                    <a href="report.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        รายงานสถิติ
+                    </a>
+                    
+                    <a id="adminMenuLink" href="admin.html" class="hidden flex items-center gap-2 px-3 py-2 rounded-lg text-amber-400 hover:bg-slate-800 font-medium transition text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        จัดการผู้ใช้ (Admin)
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0 ml-4 pl-4 border-l border-slate-700">
+                <div class="hidden sm:flex flex-col items-end">
+                    <span class="text-[10px] text-slate-400 font-medium tracking-wide">ผู้ใช้งานระบบ</span>
+                    <span id="topbarUserName" class="text-sm font-bold text-white">กำลังโหลด...</span>
+                </div>
+                <div class="relative">
+                    <img id="userProfilePic" src="" alt="Profile" class="w-9 h-9 rounded-full border-2 border-slate-600 shadow-sm object-cover bg-slate-800">
+                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-500 border-2 border-slate-900 rounded-full"></div>
+                </div>
+                <button onclick="logout()" title="ออกจากระบบ" class="ml-1 text-slate-400 hover:text-red-400 bg-slate-800 hover:bg-red-500/10 p-2 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+
+        </div>
+    </nav>
+
+    <div class="p-4 md:p-6">
+        <div class="max-w-[1400px] mx-auto">
+            
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 tracking-tight"> บันทึกการติดตามนักศึกษากลุ่มเสี่ยง</h1>
+                    <p class="text-sm text-slate-500 mt-1">เฉพาะนักศึกษาสถานะ <span class="font-bold text-red-600">วิกฤต</span> และ <span class="font-bold text-orange-500">รอพินิจ</span></p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
+                    <select id="filterBranch" onchange="filterTable()" class="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm min-w-[150px] outline-none">
+                        <option value="">ทุกสาขาวิชา</option>
+                    </select>
+
+                    <select id="filterYear" onchange="filterTable()" class="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm min-w-[120px] outline-none">
+                        <option value="">ทุกปีการศึกษา</option>
+                    </select>
+
+                    <select id="filterTerm" onchange="filterTable()" class="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm min-w-[100px] outline-none">
+                        <option value="">ทุกเทอม</option>
+                    </select>
+
+                    <div class="relative w-full md:w-64">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" id="searchInput" onkeyup="filterTable()" class="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 shadow-sm outline-none" placeholder="ค้นหารหัส, ชื่อ...">
+                    </div>
+
+                    <button onclick="exportToExcel()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap text-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        ส่งออก Excel
+                    </button>
+                </div>
+            </div>
+
+            <div id="loading" class="mb-6 p-5 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
+                <p class="text-lg font-bold text-blue-800 animate-pulse">กำลังดึงข้อมูลนักศึกษากลุ่มเสี่ยง...</p>
+            </div>
+
+            <div id="tableContainer" class="hidden bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-8">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-100 text-slate-700 border-b">
+                            <tr>
+                                <th class="px-5 py-4 w-24">ปี/เทอม</th>
+                                <th class="px-5 py-4 w-32">รหัสนักศึกษา</th>
+                                <th class="px-5 py-4">ชื่อ-นามสกุล</th>
+                                <th class="px-5 py-4">สาขาวิชา</th>
+                                <th class="px-5 py-4 text-center">GPA</th>
+                                <th class="px-5 py-4 text-center">สถานะ</th>
+                                <th class="px-5 py-4 text-center">ดำเนินการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody" class="divide-y divide-slate-100">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="trackingModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all border-t-4 border-blue-500">
+            <div class="bg-slate-800 px-6 py-4 flex justify-between items-center border-b border-slate-700">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    บันทึกการติดตามและให้คำปรึกษา
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white bg-slate-700 rounded-full p-1 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <form id="trackingForm" onsubmit="saveTracking(event)" class="p-6">
+                <input type="hidden" id="modalStudentId">
+                <input type="hidden" id="modalTerm">
+                
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4 grid grid-cols-2 gap-4 text-sm">
+                    <div><span class="text-slate-500 block text-xs mb-1">รหัสนักศึกษา</span><strong id="infoId" class="text-slate-800"></strong></div>
+                    <div><span class="text-slate-500 block text-xs mb-1">ชื่อ-นามสกุล</span><strong id="infoName" class="text-slate-800"></strong></div>
+                    <div><span class="text-slate-500 block text-xs mb-1">สถานะ</span><span id="infoStatus" class="inline-block px-2 py-1 rounded text-xs font-bold mt-1"></span></div>
+                    <div><span class="text-slate-500 block text-xs mb-1">GPA ปัจจุบัน</span><strong id="infoGpa" class="text-red-600"></strong></div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-slate-700">วันที่ให้คำปรึกษา/ติดต่อ</label>
+                        <input type="date" id="trackDate" required class="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-slate-700">รายละเอียดปัญหา / ผลการพูดคุย</label>
+                        <textarea id="trackDetail" rows="4" required class="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none" placeholder="ระบุรายละเอียดปัญหา เช่น ปัญหาครอบครัว, สุขภาพ, การแบ่งเวลา..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-slate-700">แนวทางแก้ไข / ข้อเสนอแนะเบื้องต้น</label>
+                        <textarea id="trackSolution" rows="2" class="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none" placeholder="เช่น ให้คำปรึกษาการจัดตารางอ่านหนังสือ, ส่งต่ออาจารย์ที่ปรึกษา..."></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-4">
+                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 focus:ring-4 focus:outline-none focus:ring-slate-200 transition-colors">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                        บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allRiskData = [];
+        let currentFilteredData = [];
+        let currentEditingStudent = null;
+
+        async function loadAtRiskData() {
+            document.getElementById('loading').classList.remove('hidden');
+            try {
+                const response = await fetch('api.php?action=get_all');
+                const textData = await response.text();
+                
+                let result;
+                try { result = JSON.parse(textData); } 
+                catch (e) { throw new Error("การตอบกลับจากเซิร์ฟเวอร์ผิดปกติ"); }
+
+                let rawData = Array.isArray(result) ? result : (result.data || []);
+                
+                allRiskData = rawData.map(std => {
+                    // ลอจิกการหั่นข้อความจาก Database
+                    let tDate = "", tDetail = "", tSolution = "";
+                    if (std.note) {
+                        let lines = std.note.split('\n');
+                        lines.forEach(line => {
+                            if (line.includes('วันที่ติดตาม:')) tDate = line.split('วันที่ติดตาม:')[1].trim();
+                            else if (line.includes('ปัญหา:')) tDetail = line.split('ปัญหา:')[1].trim();
+                            else if (line.includes('แนวทาง:')) tSolution = line.split('แนวทาง:')[1].trim();
+                        });
+                    }
+
+                    return {
+                        ...std,
+                        name: std.name || std.fullname || "ไม่ระบุชื่อ",
+                        status_text: (std.status_text || std.status || "ไม่ระบุสถานะ").trim(),
+                        track_date: tDate,
+                        tracking_detail: tDetail,
+                        tracking_solution: tSolution
+                    };
+                }).filter(std => {
+                    let st = std.status_text;
+                    return st.includes('วิกฤต') || st.includes('รอพินิจ');
+                });
+
+                allRiskData.sort((a, b) => {
+                    if (a.term !== b.term) return b.term.localeCompare(a.term);
+                    return parseFloat(a.gpa) - parseFloat(b.gpa);
+                });
+
+                populateFilters(allRiskData);
+                
+                currentFilteredData = allRiskData;
+                renderTable(currentFilteredData);
+                document.getElementById('tableContainer').classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                alert("เชื่อมต่อฐานข้อมูลล้มเหลว หรืออาจจะยังไม่มีข้อมูลในระบบครับ");
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        function populateFilters(data) {
+            const years = [...new Set(data.map(item => item.academic_year))].filter(Boolean).sort().reverse();
+            const terms = [...new Set(data.map(item => item.term))].filter(Boolean).sort();
+            const branches = [...new Set(data.map(item => item.branch))].filter(Boolean).sort();
+
+            const yearSelect = document.getElementById('filterYear');
+            const termSelect = document.getElementById('filterTerm');
+            const branchSelect = document.getElementById('filterBranch'); 
+
+            yearSelect.innerHTML = '<option value="">ทุกปีการศึกษา</option>';
+            years.forEach(y => yearSelect.innerHTML += `<option value="${y}">${y}</option>`);
+
+            termSelect.innerHTML = '<option value="">ทุกเทอม</option>';
+            terms.forEach(t => termSelect.innerHTML += `<option value="${t}">${t}</option>`);
+
+            branchSelect.innerHTML = '<option value="">ทุกสาขาวิชา</option>';
+            branches.forEach(b => branchSelect.innerHTML += `<option value="${b}">${b}</option>`);
+        }
+
+        function filterTable() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const selectedYear = document.getElementById('filterYear').value;
+            const selectedTerm = document.getElementById('filterTerm').value;
+            const selectedBranch = document.getElementById('filterBranch').value; 
+
+            currentFilteredData = allRiskData.filter(std => {
+                const matchSearch = (std.student_id && std.student_id.toLowerCase().includes(input)) ||
+                                    (std.name && std.name.toLowerCase().includes(input)); 
+                const matchYear = selectedYear === "" || std.academic_year === selectedYear;
+                const matchTerm = selectedTerm === "" || std.term === selectedTerm;
+                const matchBranch = selectedBranch === "" || std.branch === selectedBranch;
+
+                return matchSearch && matchYear && matchTerm && matchBranch;
+            });
+
+            renderTable(currentFilteredData);
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500 font-medium">ไม่พบข้อมูลจากการค้นหา/ตัวกรอง</td></tr>`;
+                return;
+            }
+
+            data.forEach(std => {
+                let badgeClass = "bg-slate-100 text-slate-800";
+                let st = std.status_text;
+                
+                if (st.includes("วิกฤต")) badgeClass = "bg-red-100 text-red-800 border border-red-200";
+                else if (st.includes("รอพินิจ 2")) badgeClass = "bg-red-50 text-red-700 border border-red-200";
+                else if (st.includes("รอพินิจ 1")) badgeClass = "bg-orange-100 text-orange-800 border border-orange-200";
+                else if (st.includes("รอพินิจ")) badgeClass = "bg-yellow-100 text-yellow-800 border border-yellow-200";
+                
+                let hasTracking = (std.track_date != null && std.track_date !== "");
+                let btnClass = hasTracking 
+                    ? "bg-green-50 text-green-600 hover:bg-green-600 hover:text-white border border-green-200 hover:border-green-600" 
+                    : "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600";
+                let btnText = hasTracking ? "แก้ไขบันทึก" : "บันทึก";
+
+                let stdJson = encodeURIComponent(JSON.stringify(std));
+
+                let tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50/50 transition border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="px-5 py-4 font-semibold text-slate-700">${std.academic_year}/${std.term}</td>
+                    <td class="px-5 py-4 font-mono text-slate-600">${std.student_id}</td>
+                    <td class="px-5 py-4 font-medium text-slate-900">${std.name}</td>
+                    <td class="px-5 py-4 text-slate-600 text-sm">${std.branch || '-'}</td>
+                    <td class="px-5 py-4 text-center font-bold text-red-600">${std.gpa}</td>
+                    <td class="px-5 py-4 text-center"><span class="px-2 py-1 rounded text-xs font-bold shadow-sm ${badgeClass}">${std.status_text}</span></td>
+                    <td class="px-5 py-4 text-center">
+                        <button onclick="openModal('${stdJson}')" class="${btnClass} px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 mx-auto shadow-sm min-w-[90px]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            ${btnText}
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function exportToExcel() {
+            if (currentFilteredData.length === 0) {
+                alert("ไม่มีข้อมูลสำหรับส่งออกครับ");
+                return;
+            }
+
+            const exportData = currentFilteredData.map(std => ({
+                "ปีการศึกษา": std.academic_year || "-",
+                "เทอม": std.term || "-",
+                "รหัสนักศึกษา": std.student_id || "-",
+                "ชื่อ-นามสกุล": std.name || "-",
+                "สาขาวิชา": std.branch || "-",
+                "GPA": std.gpa || "-",
+                "สถานะ": std.status_text || "-",
+                "วันที่ติดตามล่าสุด": std.track_date || "ยังไม่ได้บันทึก",
+                "รายละเอียดปัญหา": std.tracking_detail || "-",
+                "แนวทางแก้ไข": std.tracking_solution || "-"
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "บันทึกกลุ่มเสี่ยง");
+
+            let filename = "บันทึกติดตามนักศึกษากลุ่มเสี่ยง";
+            const branch = document.getElementById('filterBranch').value;
+            const year = document.getElementById('filterYear').value;
+            const term = document.getElementById('filterTerm').value;
+            
+            if (branch) filename += `_${branch}`;
+            if (year) filename += `_ปี${year}`;
+            if (term) filename += `_เทอม${term}`;
+            filename += ".xlsx";
+
+            XLSX.writeFile(workbook, filename);
+        }
+
+        function openModal(stdJsonString) {
+            const std = JSON.parse(decodeURIComponent(stdJsonString));
+            currentEditingStudent = std;
+
+            document.getElementById('modalStudentId').value = std.student_id;
+            document.getElementById('modalTerm').value = `${std.academic_year}/${std.term}`;
+            
+            document.getElementById('infoId').innerText = std.student_id;
+            document.getElementById('infoName').innerText = std.name;
+            document.getElementById('infoGpa').innerText = std.gpa;
+            
+            let badgeClass = "bg-slate-100 text-slate-800";
+            if (std.status_text.includes("วิกฤต")) badgeClass = "bg-red-100 text-red-800";
+            else if (std.status_text.includes("รอพินิจ")) badgeClass = "bg-orange-100 text-orange-800";
+            
+            let statusEl = document.getElementById('infoStatus');
+            statusEl.innerText = std.status_text;
+            statusEl.className = `inline-block px-2 py-1 rounded text-xs font-bold mt-1 ${badgeClass}`;
+
+            document.getElementById('trackDate').value = std.track_date || new Date().toISOString().split('T')[0];
+            document.getElementById('trackDetail').value = std.tracking_detail || ''; 
+            document.getElementById('trackSolution').value = std.tracking_solution || '';
+
+            document.getElementById('trackingModal').classList.remove('hidden');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            document.getElementById('trackingModal').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            currentEditingStudent = null;
+        }
+
+        async function saveTracking(event) {
+            event.preventDefault();
+            
+            const dataToSave = {
+                action: 'save_tracking', 
+                student_id: document.getElementById('modalStudentId').value,
+                track_date: document.getElementById('trackDate').value,
+                track_detail: document.getElementById('trackDetail').value,
+                track_solution: document.getElementById('trackSolution').value
+            };
+
+            try {
+                const response = await fetch('api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSave)
+                });
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    alert(`✅ บันทึกข้อมูลเรียบร้อยแล้ว`);
+                    closeModal();
+                    loadAtRiskData(); 
+                } else {
+                    alert("เกิดข้อผิดพลาด: " + result.message);
+                }
+            } catch (error) {
+                alert("❌ เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว");
+            }
+        }
+    </script>
+    <script>
+        // ระบบ Login Check
+        var currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            alert("🔒 กรุณาเข้าสู่ระบบก่อนใช้งานครับ");
+            window.location.href = 'login.html';
+        } else {
+            let topbarName = document.getElementById('topbarUserName');
+            if(topbarName) topbarName.innerText = currentUser.fullname;
+
+            let profilePic = document.getElementById('userProfilePic');
+            if(profilePic) {
+                profilePic.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullname)}&background=0ea5e9&color=fff&size=128&bold=true`;
+            }
+
+            if (currentUser.role === 'admin') {
+                let adminMenu = document.getElementById('adminMenuLink');
+                if (adminMenu) adminMenu.classList.remove('hidden'); 
+            }
+        }
+
+        function logout() {
+            if(confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
+                localStorage.removeItem('currentUser'); 
+                window.location.href = 'login.html';    
+            }
+        }
+    </script>
+</body>
+</html>
