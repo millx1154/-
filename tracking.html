@@ -194,7 +194,7 @@
         async function loadAtRiskData() {
             document.getElementById('loading').classList.remove('hidden');
             try {
-                const response = await fetch('api.php?action=get_all');
+                const response = await fetch('/api/save?action=get_all');
                 const textData = await response.text();
                 
                 let result;
@@ -204,15 +204,22 @@
                 let rawData = Array.isArray(result) ? result : (result.data || []);
                 
                 allRiskData = rawData.map(std => {
-                    // ลอจิกการหั่นข้อความจาก Database
                     let tDate = "", tDetail = "", tSolution = "";
+                    
+                    // ปรับลอจิกการอ่านข้อมูลบันทึกให้รองรับฐานข้อมูลใหม่จาก Vercel Postgres
                     if (std.note) {
-                        let lines = std.note.split('\n');
-                        lines.forEach(line => {
-                            if (line.includes('วันที่ติดตาม:')) tDate = line.split('วันที่ติดตาม:')[1].trim();
-                            else if (line.includes('ปัญหา:')) tDetail = line.split('ปัญหา:')[1].trim();
-                            else if (line.includes('แนวทาง:')) tSolution = line.split('แนวทาง:')[1].trim();
-                        });
+                        if (std.note.includes('ปัญหา:')) {
+                            // กรณีเป็นข้อมูลแบบเก่าที่เคยรวมกันมา (เผื่อไว้)
+                            let lines = std.note.split('\n');
+                            lines.forEach(line => {
+                                if (line.includes('วันที่ติดตาม:')) tDate = line.split('วันที่ติดตาม:')[1].trim();
+                                else if (line.includes('ปัญหา:')) tDetail = line.split('ปัญหา:')[1].trim();
+                                else if (line.includes('แนวทาง:')) tSolution = line.split('แนวทาง:')[1].trim();
+                            });
+                        } else {
+                            // ข้อมูลแบบใหม่จาก Vercel Postgres (ดึงรายละเอียดล่าสุดมาโชว์)
+                            tDetail = std.note; 
+                        }
                     }
 
                     return {
@@ -303,7 +310,7 @@
                 else if (st.includes("รอพินิจ 1")) badgeClass = "bg-orange-100 text-orange-800 border border-orange-200";
                 else if (st.includes("รอพินิจ")) badgeClass = "bg-yellow-100 text-yellow-800 border border-yellow-200";
                 
-                let hasTracking = (std.track_date != null && std.track_date !== "");
+                let hasTracking = (std.tracking_detail != null && std.tracking_detail !== "");
                 let btnClass = hasTracking 
                     ? "bg-green-50 text-green-600 hover:bg-green-600 hover:text-white border border-green-200 hover:border-green-600" 
                     : "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600";
@@ -412,7 +419,7 @@
             };
 
             try {
-                const response = await fetch('api.php', {
+                const response = await fetch('/api/save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dataToSave)

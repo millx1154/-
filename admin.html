@@ -192,7 +192,8 @@
 
         async function loadUsers() {
             try {
-                const res = await fetch('api.php?action=get_users');
+                // แก้ไขจาก api.php เป็น /api/save
+                const res = await fetch('/api/save?action=get_users');
                 const result = await res.json();
                 if(result.status === 'success') {
                     usersData = result.data;
@@ -200,7 +201,7 @@
                 }
             } catch (err) { 
                 console.error("Error:", err);
-                alert('เชื่อมต่อฐานข้อมูลล้มเหลว ตรวจสอบไฟล์ api.php ครับ'); 
+                alert('เชื่อมต่อฐานข้อมูลล้มเหลว ตรวจสอบระบบ Vercel ครับ'); 
             } 
             finally { 
                 const loader = document.getElementById('loading');
@@ -218,7 +219,6 @@
             }
 
             usersData.forEach(u => {
-                // เปลี่ยนสี Badge Admin เป็นโทนสีฟ้า
                 let roleBadge = u.role === 'admin' 
                     ? '<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded shadow-sm font-bold text-[11px] border border-blue-200">Admin</span>' 
                     : '<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded shadow-sm font-bold text-[11px] border border-slate-200">User</span>';
@@ -296,7 +296,8 @@
             }
 
             try {
-                const res = await fetch('api.php', { 
+                // แก้ไขจาก api.php เป็น /api/save
+                const res = await fetch('/api/save', { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify(payload) 
@@ -335,7 +336,8 @@
             if(!confirm(`ยืนยันการลบผู้ใช้ "${username}" ออกจากระบบถาวร?`)) return;
             
             try {
-                const res = await fetch('api.php', { 
+                // แก้ไขจาก api.php เป็น /api/save
+                const res = await fetch('/api/save', { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({action: 'delete_user', id: id}) 

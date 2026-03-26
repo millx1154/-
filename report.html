@@ -230,7 +230,8 @@
         async function loadReportData() {
             document.getElementById('loading').classList.remove('hidden');
             try {
-                const response = await fetch('api.php?action=get_all');
+                // แก้ไขแล้วให้สมบูรณ์ (เติมเครื่องหมาย ;)
+                const response = await fetch('/api/save?action=get_all');
                 const textData = await response.text();
                 
                 let result;
@@ -574,7 +575,6 @@
             });
         }
 
-        // --- แก้ไข: เปลี่ยนกราฟแนวโน้มการติดซ้ำซ้อนให้เป็นแบบแท่ง (Bar Chart) ---
         function drawRepeatTrendChart(labels, data2, data3) {
             const ctx = document.getElementById('repeatTrendChart').getContext('2d');
             if(repeatTrendChartInstance) repeatTrendChartInstance.destroy();
@@ -624,7 +624,6 @@
                 }
             });
         }
-        // ----------------------------------------------------------------------
 
         function drawBranchChart(labels, dataObj) {
             const ctx = document.getElementById('branchChart').getContext('2d');
@@ -666,9 +665,10 @@
             let topbarName = document.getElementById('topbarUserName');
             if(topbarName) topbarName.innerText = currentUser.fullname;
 
+            // อัปเดตรูปโปรไฟล์ให้สวยงาม
             let profilePic = document.getElementById('userProfilePic');
             if(profilePic && currentUser.fullname) {
-                profilePic.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser.fullname) + "&background=0ea5e9&color=fff";
+                profilePic.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullname)}&background=0ea5e9&color=fff&size=128&bold=true`;
             }
 
             if (currentUser.role === 'admin') {

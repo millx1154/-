@@ -159,7 +159,7 @@
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('tableContainer').classList.add('hidden');
             try {
-                const response = await fetch('api.php?action=get_all');
+                const response = await fetch('/api/save?action=get_all');
                 const textData = await response.text();
                 
                 let result = JSON.parse(textData);
@@ -285,7 +285,7 @@
                         </span>
                     </td>
                     <td class="px-5 py-3 text-center">
-                        <button onclick="deleteStudent('${std.id || std.student_id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition" title="ลบข้อมูล">
+                        <button onclick="deleteStudent('${std.record_id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition" title="ลบข้อมูล">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </td>
@@ -294,24 +294,28 @@
             });
         }
 
-        // ฟังก์ชันลบข้อมูล
-        async function deleteStudent(id) {
-            if(!id) return alert('ไม่พบ ID สำหรับลบข้อมูล');
-            if(confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนักศึกษารายนี้?')) {
+        // ฟังก์ชันลบข้อมูล (อัปเดตให้รองรับ Vercel)
+        async function deleteStudent(recordId) {
+            if(!recordId || recordId === "undefined") {
+                return alert('ไม่สามารถลบข้อมูลได้ (ไม่พบรหัสอ้างอิง)');
+            }
+            if(confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลประวัตินักศึกษารายการนี้?')) {
                 try {
-                    const response = await fetch(`api.php?action=delete&id=${id}`, { method: 'GET' });
+                    const response = await fetch('/api/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete_student', id: recordId })
+                    });
                     const res = await response.json();
                     
-                    if(res.success || res.status === 'success') {
-                        loadStudentsData();
-                    } else {
+                    if(res.status === 'success') {
                         alert('ลบข้อมูลสำเร็จ');
-                        loadStudentsData();
+                        loadStudentsData(); // รีโหลดตารางใหม่
+                    } else {
+                        alert('ลบข้อมูลไม่สำเร็จ: ' + res.message);
                     }
                 } catch(e) {
-                    console.error(e);
-                    alert('ส่งคำสั่งลบแล้ว (ตรวจสอบ API หลังบ้านอีกครั้ง)');
-                    loadStudentsData();
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
                 }
             }
         }
@@ -323,9 +327,6 @@
             alert("🔒 กรุณาเข้าสู่ระบบก่อนใช้งานครับ");
             window.location.href = 'login.html';
         } else {
-            let sidebarName = document.getElementById('sidebarUserName');
-            if(sidebarName) sidebarName.innerText = currentUser.fullname;
-
             let topbarName = document.getElementById('topbarUserName');
             if(topbarName) topbarName.innerText = currentUser.fullname;
 
